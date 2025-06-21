@@ -1,0 +1,176 @@
+#!/bin/bash
+
+generate_c_code() {
+    cat > "$1" <<code
+#include <stdio.h>
+
+int main() {
+    printf("C code\n");
+    return 0;
+}
+code
+}
+
+generate_cpp_code() {
+    cat > "$1" <<code
+#include <iostream>
+
+using namespace std;
+
+int main() {
+    cout << "C++ code" << endl;
+    return 0;
+}
+code
+}
+
+generate_java_code() {
+    class_name=$(basename "$1" .java)
+cat > "$1" <<code
+public class $class_name {
+    public static void main(String[] args) {
+        System.out.println("Java code");
+    }
+}
+code
+}
+
+generate_cs_code() {
+    class_name=$(basename "$1" .cs)
+    cat > "$1" <<code
+using System;
+
+class $class_name {
+    static void Main() {
+        Console.WriteLine("C# code");
+    }
+}
+code
+}
+
+generate_go_code() {
+    package_name=$(basename "$1" .go)
+cat > "$1" <<code
+package main
+
+import "fmt"
+
+func main() {
+    fmt.Println("Golang code")
+}
+code
+}
+generate_rs_code() {
+    cat > "$1" <<code
+fn main(){
+    println!("Rust code");
+}
+code
+}
+
+generate_dart_code() {
+    cat > "$1" <<code
+void main() {
+    print("Dart code");
+}
+code
+}
+
+generate_kt_code() {
+        cat > "$1" <<code
+fun main() {
+    println("Kotlin")
+}
+code
+}
+generate_sh_code(){
+    script_name="$1"
+    script_name="${script_name%.*}"  # Remove extension
+    cat > "$script_name" <<code
+#!/bin/bash
+
+$script_name(){
+# Add your commands here
+}
+if [ "\$#" -lt 1 ]; then
+    echo "Usage: \$0 <filename1> [filename2] [filename3] ..."
+    exit 1
+fi
+for file in "\$@"; do
+    if [ ! -f "$file" ]; then
+        echo "Error: File '\$file' does not exist or is not a regular file."
+        exit 1
+    fi
+done
+$script_name "\$@"
+code
+    chmod +x "$script_name"
+    echo "Script '$script_name' generated."
+}
+generate_hs_code() {
+    cat > "$1" <<code
+main :: IO ()
+main = putStrLn "Haskell code"
+code
+}
+
+generate_scala_code() {
+    cat > "$1" <<code
+object $class_name  extends App {
+    println("Scala code")
+}
+code
+}
+generate_files() {
+    for filename in "${@}"; do
+        extension="${filename##*.}"
+        case "$extension" in
+            sh)
+                generate_sh_code "$filename"
+                ;;
+            c)
+                generate_c_code "$filename"
+                ;;
+            cpp)
+                generate_cpp_code "$filename"
+                ;;
+            java)
+                generate_java_code "$filename"
+                ;;
+            cs)
+                generate_cs_code "$filename"
+                ;;
+            go)
+                generate_go_code "$filename"
+                ;;
+            rs)
+                generate_rs_code "$filename"
+                ;;
+            dart)
+                generate_dart_code "$filename"
+                ;;
+            kt)
+                generate_kt_code "$filename"
+                ;;
+            hs)
+                generate_hs_code "$filename"
+                ;;
+            scala)
+                generate_scala_code "$filename"
+                ;;
+            *)
+                echo "Unsupported file extension for file: $filename. Use '.c','.sh',,'.hs' '.cpp', '.java','.cs','.go'."
+                exit 1
+                ;;
+        esac
+        echo "Basic code structure generated in $filename based on file extension."
+    done
+}
+
+if [ "$#" -lt 1 ]; then
+    echo "Usage: $0 <filename1> [filename2] [filename3] ..."
+    exit 1
+fi
+
+generate_files "$@"
+

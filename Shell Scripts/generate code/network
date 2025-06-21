@@ -1,0 +1,40 @@
+#!/bin/bash
+#Script to check  saved wifi passwords
+network() {
+    # Iterate over each configuration file
+    for profile in /etc/NetworkManager/system-connections/*; do
+        # Extract SSID
+        ssid=$(sudo grep -h '^ssid=' "$profile" | sed 's/^ssid=//')
+        # Check if password exists
+        psk=$(sudo grep -h '^psk=' "$profile" | sed 's/^psk=//')
+        # Check if the SSID matches the provided network name
+        if [ "$ssid" == "$1" ]; then    
+            # Display network name and password if available
+            if [ -n "$psk" ]; then
+                echo "WiFi Network: $ssid"
+                echo "Password: $psk"
+                echo "----------------------"
+                exit 0 # Exit after finding the network
+            else
+                echo "WiFi Network '$1' has no password configured."
+                exit 0 # Exit even if password not found for specified network
+            fi
+        fi
+    done
+
+    # If the script reaches here, the network name was not found
+    echo "WiFi Network '$1' not found."
+    exit 1
+}
+
+# Function to display passwords for all networks
+all_networks() {
+   sudo ls /etc/NetworkManager/system-connections/ | while read -r profile; do     ssid=$(sudo grep -h '^ssid=' "/etc/NetworkManager/system-connections/$profile" | sed 's/^ssid=//');     psk=$(sudo grep -h '^psk=' "/etc/NetworkManager/system-connections/$profile" | sed 's/^psk=//');     echo "WiFi Network: $ssid";     echo "Password: $psk";     echo "----------------------"; done
+}
+
+# Check if a network name is provided as argument
+if [ -z "$1" ]; then
+    all_networks
+else
+    network "$1"
+fi

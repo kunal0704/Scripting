@@ -1,0 +1,86 @@
+#!/bin/bash
+
+# Check for sudo privileges
+if [ "$(id -u)" != "0" ]; then
+    echo "This script needs to be run with sudo or as root."
+    exit 1
+fi
+
+output=$(grep -E 'debian|fedora|Rocky Linux|suse opensuse' /etc/os-release)
+# Check if pandoc is installed
+if ! command -v pandoc &> /dev/null; then
+    # Ask for user confirmation before installation
+    read -p "Pandoc is not installed. Do you want to install it? (y/n): " install_pandoc
+    if [ "$install_pandoc" = "y" ] && [[ -n $output ]]; then
+        case $output in
+            *"debian"*)
+                sudo apt-get install pandoc ;;
+            *"fedora"*|"Rocky Linux"*)
+                sudo dnf install pandoc ;;
+            *)
+                echo "Unsupported package manager. Please install pandoc manually."
+                exit 1 ;;
+        esac
+    else
+        echo "Pandoc is required for the script. Please install Pandoc manually before running the script."
+        exit 1
+    fi
+fi
+
+# Check if xelatex is installed
+if ! command -v xelatex &> /dev/null; then
+    # Ask for user confirmation before installation
+    read -p "XeLaTeX is not installed. Do you want to install it? (y/n): " install_xelatex
+    if [ "$install_xelatex" = "y" ] && [[ -n $output ]]; then
+        echo "Attempting to install texlive-xetex..."
+        # Use the appropriate package manager for your system
+        if [[ $output == *"debian"* ]]; then
+            sudo apt-get install texlive-xetex
+        elif [[ $output == *"fedora"* || $output == *"Rocky Linux"* ]];then
+            sudo dnf install texlive-xetex
+        else
+            echo "Unsupported package manager. Please install texlive-xetex manually."
+            exit 1
+        fi
+    fi
+     
+
+        # Check if installation was successful
+        if ! command -v xelatex &> /dev/null; then
+            echo "Failed to install XeLaTeX. Please install texlive-xetex manually."
+            exit 1
+        else
+            echo "XeLaTeX installation successful!"
+        fi
+    else
+        echo "XeLaTeX is required for the script. Please install texlive-xetex manually before running the script."
+        exit 1
+    fi
+fi
+
+# Rest of your conversion logic
+
+
+for file in *.epub; do
+    # Check if the file exists
+    if [ ! -e "$file" ]; then
+        echo "File not found: $file"
+        continue
+    fi
+
+    # Build the output filename with .pdf extension
+    output_filename="${file%.*}.pdf"
+
+    # Print the output filename
+    echo "Converting $file to $output_filename"
+
+    # Convert the epub to pdf using pandoc
+    pandoc "$file" -o "$output_filename" --pdf-engine=xelatex
+
+    # Check if pandoc conversion was successful
+    if [ $? -eq 0 ]; then
+        echo "Conversion successful!"
+    else
+        echo "Error converting $file. Check the Pandoc and LaTeX installation or consider using a different PDF engine."
+    fi
+done

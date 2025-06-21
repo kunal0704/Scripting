@@ -1,0 +1,16 @@
+#!/bin/bash
+
+add() {
+    sum=0
+    for number in "${@}"; do
+        ((sum += number))
+    done
+    echo "Sum of numbers: $sum"
+}
+
+if [ "$#" -lt 1 ]; then
+    echo "Usage: $0 <number1> [number2] [number3] ..."
+    exit 1
+fi
+
+add "$@"

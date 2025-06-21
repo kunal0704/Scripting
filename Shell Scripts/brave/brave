@@ -1,0 +1,53 @@
+#! /bin/bash
+
+install_brave() {
+    local distro_name=$1
+
+    # Check if Brave browser is already installed
+    if command -v brave-browser &>/dev/null; then
+        echo "Brave browser is already installed on $distro_name."
+    else
+        case $distro_name in
+            debian)
+                sudo apt install curl
+                sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
+                echo "deb [signed-by=/usr/share/keyrings/brave-browser-archive-keyring.gpg] https://brave-browser-apt-release.s3.brave.com/ stable main" | sudo tee /etc/apt/sources.list.d/brave-browser-release.list
+                sudo apt update
+                sudo apt install brave-browser
+                ;;
+            fedora)
+                sudo dnf install dnf-plugins-core
+                sudo dnf config-manager --add-repo https://brave-browser-rpm-release.s3.brave.com/brave-browser.repo
+                sudo rpm --import https://brave-browser-rpm-release.s3.brave.com/brave-core.asc
+                sudo dnf install brave-browser
+                ;;
+            opensuse)
+                sudo zypper install curl
+                sudo rpm --import https://brave-browser-rpm-release.s3.brave.com/brave-core.asc
+                sudo zypper addrepo https://brave-browser-rpm-release.s3.brave.com/brave-browser.repo
+                sudo zypper install brave-browser
+                ;;
+            *)
+                echo "Unsupported distribution: $distro_name. Cannot install Brave browser."
+                ;;
+        esac
+    fi
+}
+
+output=$(grep -E 'debian|fedora|Rocky Linux|suse opensuse' /etc/os-release)
+
+if [[ -n $output ]]; then
+    if [[ $output == *"debian"* ]]; then
+        install_brave "debian"
+    fi
+
+    if [[ $output == *"fedora"* || $output == *"Rocky Linux"* ]]; then
+    install_brave "fedora"
+    fi
+
+    if [[ $output == *"suse opensuse"* ]]; then
+        install_brave "opensuse"
+    fi
+fi
+    echo "Distribution not found or not supported."
+fi

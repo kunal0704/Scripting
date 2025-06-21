@@ -1,0 +1,15 @@
+#!/bin/bash
+
+make() {
+    for filename in "${@}"; do
+        chmod +x "$filename"
+    done
+}
+
+if [ "$#" -lt 1 ]; then
+    echo "Usage: $0 <filename1> [filename2] [filename3] ..."
+    exit 1
+fi
+
+make "$@"
+

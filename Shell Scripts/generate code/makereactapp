@@ -1,0 +1,6 @@
+#! /bin/bash
+if [ "$#" -lt 1 ]; then
+    echo "Usage: $0 <filename1> [filename2] [filename3] ..."
+    exit 1
+fi
+npx create-react-app $1

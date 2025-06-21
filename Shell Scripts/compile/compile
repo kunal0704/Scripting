@@ -1,0 +1,64 @@
+#!/bin/bash
+
+compile_files() {
+    for file in "$@"; do
+        if [ -z "$file" ]; then
+            echo "Usage: $0 <c_file/cpp_file/java_file>"
+            exit 1
+        fi
+
+        file_extension="${file##*.}"
+        executable="${file%.*}"
+
+        case "$file_extension" in
+            c | cpp)
+                echo "Compiling $file..."
+                if [ "$file_extension" == "c" ]; then
+                    gcc -o "$executable" "$file"
+                else
+                    g++ -o "$executable" "$file"
+                fi
+
+                if [ $? -eq 0 ]; then
+                    echo "Compilation successful for $file."
+                else
+                    echo "Compilation failed for $file."
+                fi
+                ;;
+            java)
+                echo "Compiling $file..."
+                javac "$file"
+                if [ $? -eq 0 ]; then
+                    echo "Compilation successful for $file."
+                else
+                    echo "Compilation failed for $file."
+                fi
+                ;;
+            cs)
+                echo "Compiling $file..."
+                mcs "$file"
+                if [ $? -eq 0 ]; then
+                    echo "Compilation successful for $file."
+                else
+                    echo "Compilation failed for $file."
+                fi
+                ;;
+            rs)
+            	echo "Compiling $file..."
+                rustc hello.rs
+                ;;
+            *)
+                echo "Unsupported file type. Use .c, .cpp, .java, .cs files only."
+                exit 1
+                ;;
+        esac
+    done
+}
+
+if [ "$#" -eq 0 ]; then
+    echo "Usage: $0 <file1> [file2] [file3] ..."
+    exit 1
+fi
+
+compile_files "$@"
+
