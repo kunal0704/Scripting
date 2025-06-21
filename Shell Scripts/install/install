@@ -1,0 +1,57 @@
+#! /bin/bash
+if [ $# -ne 1 ] ; then
+echo "Usage: $0 command" >&2
+exit 1
+fi
+
+install() {
+    if [ $# -ne 1 ] ; then
+        echo "Usage: $0 command" >&2
+        exit 1
+    fi
+
+    output=$(grep -E 'debian|fedora|Rocky Linux|suse opensuse' /etc/os-release)
+
+    if [[ -n $output ]]; then
+        case $output in
+            *"debian"*)
+                if [ "$1" == "update" ]; then
+                    sudo apt-get update && sudo apt-get upgrade -y
+                elif [ "${1##*.}" == "deb" ]; then
+                    sudo dpkg -i "$1"
+                else
+                   output_error_correction=$(sudo apt-get install "$1" 2>&1)
+
+                    if [[ $? -ne 0 && $output_error_correction == *"apt --fix-broken install"* ]]; then
+                        echo "Running: $output_error_correction"
+                        sudo apt --fix-broken install
+                        sudo apt-get install "$1" 
+                    fi
+
+                fi
+                ;;
+            *"fedora"*|*"Rocky Linux"*)
+                if [ "$1" == "update" ]; then
+                    sudo dnf update && sudo dnf upgrade -y
+                elif [ "${1##*.}" == "rpm" ]; then
+                    sudo dnf install "$1"
+                else
+                    sudo dnf install "$1"
+                fi
+                ;;
+            *"suse opensuse"*)
+                if [ "$1" == "update" ]; then
+                    sudo zypper refresh && sudo zypper update -y
+                elif [ "${1##*.}" == "rpm" ]; then
+                    sudo dnf install "$1"
+                else
+                    sudo zypper install "$1"
+                fi
+                ;;
+        esac
+    fi
+}
+
+# Call the install function with the command-line argument
+install "$1"
+

@@ -1,0 +1,403 @@
+#!/bin/bash
+
+install_java() {
+    if [ -x "$(command -v java)" ] && [ -x "$(command -v javac)" ]; then
+        echo "Java is already installed."
+    else
+        echo "Installing Java...."
+        if [ -x "$(command -v apt)" ]; then
+                sudo apt update
+                sudo apt install default-jre default-jdk -y
+                sudo apt install openjdk-19-jdk-headless
+            elif [ -x "$(command -v yum)" ]; then
+                sudo yum update
+                sudo yum install java-latest-openjdk-devel -y
+            elif [ -x "$(command -v dnf)" ]; then
+                sudo dnf update
+                sudo dnf install java-latest-openjdk-devel -y
+            elif [ -x "$(command -v pacman)" ]; then
+                sudo pacman -Syu jdk-openjdk -y
+            else
+                echo "Unsupported package manager. Please install Java manually."
+                exit 1
+            fi
+    fi
+    echo
+    echo "java Version:-"
+    java --version
+    javac --version
+}
+install_rust(){
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+rustc --version
+}
+update_rust(){
+rustup update
+rustc --version
+}
+install_nodejs() {
+    if [ -x "$(command -v node)" ] && [ -x "$(command -v npm)" ]; then
+        echo "Node is already installed."
+    else
+        echo "Installing Node...."
+        if [ -x "$(command -v apt)" ]; then
+            curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+            . ~/.nvm/nvm.sh
+            nvm install node
+            sudo apt install npm -y
+        elif [ -x "$(command -v yum)" ] || [ -x "$(command -v dnf)" ]; then
+            curl -fsSL https://rpm.nodesource.com/setup_lts.x | sudo -E bash -
+            sudo yum install -y nodejs
+        elif [ -x "$(command -v pacman)" ]; then
+            sudo pacman -S nodejs npm -y
+        else
+            echo "Unsupported package manager. Please install Node.js manually."
+            exit 1
+        fi
+        update_nodejs
+    fi
+    # echo
+    # echo "node Version:-"
+    # node -v
+    # npm -v
+}
+
+
+install_ruby() {
+    if [ -x "$(command -v ruby)" ]; then
+        echo "Ruby is already installed."
+    else
+        echo "Installing Ruby...."
+        if [ -x "$(command -v apt)" ]; then
+            sudo apt update
+            sudo apt install ruby
+        elif [ -x "$(command -v yum)" ]; then
+            sudo yum update
+            sudo yum install ruby
+        elif [ -x "$(command -v dnf)" ]; then
+            sudo dnf update
+            sudo dnf install ruby
+        elif [ -x "$(command -v pacman)" ]; then
+            sudo pacman -Syu ruby
+        else
+            echo "Unsupported package manager. Please install Ruby manually."
+            exit 1
+        fi
+    fi
+    echo
+    echo "ruby Version:-"
+    # Display Ruby version
+    ruby --version
+}
+
+
+install_go() {
+    if [ -x "$(command -v go)" ]; then
+        echo "Go is already installed."
+    else
+        echo "Installing Golang...."
+        if [ -x "$(command -v apt)" ]; then
+            sudo apt update
+            sudo apt install golang-go
+        elif [ -x "$(command -v dnf)" ]; then
+            sudo dnf install golang
+        elif [ -x "$(command -v yum)" ]; then
+            sudo yum install golang
+        elif [ -x "$(command -v pacman)" ]; then
+            sudo pacman -Syu go
+        else
+            echo "Unsupported package manager. Please install Go manually."
+            exit 1
+        fi
+    fi
+    echo
+    echo "go Version:-"
+    go version
+}
+
+install_git(){
+    if [ -x "$(command -v git)" ]; then
+        echo "Git is already installed."
+    else
+        echo "Installing Git...."
+        if [ -x "$(command -v apt)" ]; then
+            sudo apt update
+            sudo apt-get install git
+        elif [ -x "$(command -v yum)" ]; then
+            sudo yum update
+            sudo yum install git
+        elif [ -x "$(command -v dnf)" ]; then
+            sudo dnf update
+            sudo dnf install git
+        elif [ -x "$(command -v pacman)" ]; then
+            sudo pacman -Syu git
+        else
+            echo "Unsupported package manager. Please install Git manually."
+            exit 1
+        fi
+        echo "Git installed successfully."
+    fi
+    echo
+    echo "git Version:-"
+    git --version
+}
+
+update_java() {
+    if [ -x "$(command -v java)" ]; then
+        echo "Updating Java...."
+        if [ -x "$(command -v apt)" ]; then
+            sudo apt update
+            sudo apt install --only-upgrade openjdk-headless
+        elif [ -x "$(command -v dnf)" ]; then
+            sudo dnf upgrade java-latest-openjdk-devel
+        elif [ -x "$(command -v yum)" ]; then
+            sudo yum update java-latest-openjdk-devel
+        elif [ -x "$(command -v pacman)" ]; then
+            sudo pacman -Syu jdk-openjdk
+        else
+            echo "Unsupported package manager. Please update Java manually."
+            exit 1
+        fi
+        echo "Java updated to the latest version."
+        echo
+	echo "java Version:-"
+	java --version
+	javac --version
+    else
+        install_java
+    fi
+    
+}
+update_nodejs() {
+    if [ -x "$(command -v node)" ] && [ -x "$(command -v npm)" ]; then
+        if [ -x "$(command -v n)" ]; then
+            echo "Updating Node.js..."
+            sudo n lts
+            echo "Node.js updated to the latest LTS version."
+            echo
+	    echo "node Version:-"
+	    node -v
+	    npm -v
+        else
+            sudo npm install -g n
+            update_nodejs
+        fi
+    else
+        install_nodejs
+    fi
+    
+}
+update_ruby() {
+    if [ -x "$(command -v ruby)" ]; then
+        if [ -x "$(command -v gem)" ]; then
+            echo "Updating Ruby...."
+            sudo gem update --system
+            echo "RubyGems updated to the latest version."
+            echo
+	    echo "ruby Version:-"
+    	    # Display Ruby version
+	    ruby --version
+        else
+            echo "RubyGems is not installed. Installing RubyGems..."
+            if [ -x "$(command -v apt)" ]; then
+                sudo apt update
+                sudo apt install rubygems
+            elif [ -x "$(command -v yum)" ]; then
+                sudo yum update
+                sudo yum install rubygems
+            elif [ -x "$(command -v dnf)" ]; then
+                sudo dnf update
+                sudo dnf install rubygems
+            elif [ -x "$(command -v pacman)" ]; then
+                sudo pacman -Syu rubygems
+            else
+                echo "Unsupported package manager. Please install RubyGems manually."
+                exit 1
+            fi
+            echo "RubyGems installed."
+            sudo gem update --system
+            echo "RubyGems updated to the latest version."
+            echo
+    	    echo "ruby Version:-"
+    	    # Display Ruby version
+	    ruby --version
+        fi
+    else
+        install_ruby
+    fi
+    
+}
+update_go() {
+    if [ -x "$(command -v go)" ]; then
+        echo "updating Golang...."
+        if [ -x "$(command -v apt)" ]; then
+            sudo apt update
+            sudo apt install --only-upgrade golang
+        elif [ -x "$(command -v dnf)" ]; then
+            sudo dnf upgrade golang
+        elif [ -x "$(command -v yum)" ]; then
+            sudo yum update golang
+        elif [ -x "$(command -v pacman)" ]; then
+            sudo pacman -Syu golang
+        else
+            echo "Unsupported package manager. Please install Go manually."
+            exit 1
+        fi
+        echo "Go updated to the latest version."
+    else
+        echo "Go is not installed. Please install Go first."
+        install_go
+    fi
+    echo
+    echo "go Version:-"
+    go version
+}
+
+update_git(){
+    if [ -x "$(command -v git)" ]; then
+    echo "updating Git...."
+        if [ -x "$(command -v apt)" ]; then
+            sudo apt update
+            sudo apt upgrade git
+        elif [ -x "$(command -v yum)" ]; then
+            sudo yum update
+            sudo yum update git
+        elif [ -x "$(command -v dnf)" ]; then
+            sudo dnf update
+            sudo dnf update git
+        elif [ -x "$(command -v pacman)" ]; then
+            sudo pacman -Syu git
+        else
+            echo "Unsupported package manager. Please update Git manually."
+            
+            exit 1
+        fi
+        echo "Git updated to the latest version."
+        echo
+        echo "Git Version"
+	git --version
+    else
+        install_git
+    fi
+    
+}
+
+
+update_packages() {
+multiline_string_1=$(cat << EOF
+Which packages would you like to update?
+1. Java
+2. Node.js
+3. Ruby
+4. Git
+5. Go
+6. Rust
+7. All
+8.Exit
+EOF
+)
+        while true; do
+        echo  "$multiline_string_1"
+
+        read -p "Enter your choice: " update
+
+        case $update in
+            1)
+                update_java
+                ;;
+            2)
+                update_nodejs
+                ;;
+            3)
+                update_ruby
+                ;;
+            4)
+                update_git
+                ;;
+            5)
+                update_go
+               ;;
+            6)
+                update_rust
+                ;;
+            7)
+                update_java
+                update_nodejs
+                update_ruby
+                update_git
+                update_go
+                break
+                ;;
+            8)
+                echo "Exiting..."
+                break
+                ;;
+            *)
+                echo "Invalid choice. Please enter a valid option."
+                ;;
+        esac
+    done
+}
+# Define a multi-line string
+multiline_string=$(cat << EOF
+Enter 1 for updating packages
+Enter 2 for installing Java
+Enter 3 for installing Node.js
+Enter 4 for installing ruby
+Enter 5 for installing Git
+Enter 6 for installing Golang
+Enter 7 to install Rust
+Enter 8 to install all
+Enter 9 to quit
+EOF
+)
+
+while true; do
+    # Print the menu
+    echo "$multiline_string"
+
+    # Ask user for input
+    read -p "Enter your choice: " choice
+
+    # Check user's choice
+    case $choice in
+
+        1)
+            update_packages
+            ;;
+        2)
+            install_java
+            ;;
+        3)
+            echo "Installing Node.js..."
+            install_nodejs
+            ;;
+        4)
+            echo "Installing Ruby..."
+            install_ruby
+            ;;
+        5)
+            install_git
+            ;;
+        6)
+            install_go
+            ;;
+        7)
+            install_rust
+            ;;
+        8)
+            install_java
+            install_nodejs
+            install_ruby
+            install_git
+            install_go
+            ;;
+        9)
+            echo "Quitting the program."
+            break
+            ;;
+        *)
+            echo "Invalid choice. Please enter 1, 2, 3, 4,5,6"
+            ;;
+    esac
+done
